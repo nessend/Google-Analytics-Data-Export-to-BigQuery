@@ -4,12 +4,15 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from google.api_core.exceptions import NotFound
 from report_requests import get_report_requests
+import time
+import random
+from googleapiclient.errors import HttpError
 
 # Set up your service account key file path
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'temp.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'some service key.json'
 
 # Set up your GA view ID
-VIEW_ID = 'VIEW ID HERE'
+VIEW_ID = 'some number'
 
 def initialize_analyticsreporting():
     credentials = service_account.Credentials.from_service_account_file(
@@ -65,6 +68,21 @@ def get_report(analytics, report_request):
 
     return report_responses
 
+def get_report_with_retries(analytics, report_request):
+    retries = 0
+    while True:
+        try:
+            return get_report(analytics, report_request) 
+        
+        except HttpError as e:
+            if e.resp.status == 503:  # Check for 503 Service Unavailable status
+                retries += 1
+                wait_minutes = random.randint(1, 5)  # Random sleep time between 1 and 5 minutes
+                print(f"503 Service Unavailable. Retrying in {wait_minutes} minutes... (Attempt {retries})")
+                time.sleep(wait_minutes * 60)  # Wait for the specified number of minutes
+            else:
+                raise  # Re-raise the exception if it's not a 503 error
+
 def main():
     analytics = initialize_analyticsreporting()
     report_requests = get_report_requests(VIEW_ID)
@@ -73,7 +91,7 @@ def main():
         table_id = request['table_id']
         report_request = request['report_request']
 
-        report = get_report(analytics, report_request)
+        report = get_report_with_retries(analytics, report_request)
 
         # Extract schema from report
         dimensions = report_request['dimensions']
@@ -81,8 +99,8 @@ def main():
         schema = [bigquery.SchemaField(dim['name'].replace('ga:', ''), 'STRING') for dim in dimensions]
         schema += [bigquery.SchemaField(metric['expression'].replace('ga:', ''), 'STRING') for metric in metrics]
 
-        project_id = 'INSERT PROJECT ID'
-        dataset_id = 'INSERT DATASET ID'
+        project_id = 'some project id'
+        dataset_id = 'some dataset id'
         
         # Create a new table with a counter if the row limit exceeds 1000
         table_counter = 1
@@ -110,6 +128,7 @@ def main():
             rows_to_insert.append(record)
 
         # Insert rows into the corresponding table
+        print(f"will insert {len(rows_to_insert)} rows")
         insert_rows(project_id, dataset_id, new_table_id, rows_to_insert)
 
 if __name__ == '__main__':
