@@ -7,12 +7,17 @@ from report_requests import get_report_requests
 import time
 import random
 from googleapiclient.errors import HttpError
+import json
+
+# Load configuration from config.JSON file
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
 
 # Set up your service account key file path
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'some service key.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config['SERVICE_KEY_PATH']
 
 # Set up your GA view ID
-VIEW_ID = 'some number'
+VIEW_ID = config['VIEW_ID']
 
 def initialize_analyticsreporting():
     credentials = service_account.Credentials.from_service_account_file(
@@ -99,8 +104,8 @@ def main():
         schema = [bigquery.SchemaField(dim['name'].replace('ga:', ''), 'STRING') for dim in dimensions]
         schema += [bigquery.SchemaField(metric['expression'].replace('ga:', ''), 'STRING') for metric in metrics]
 
-        project_id = 'some project id'
-        dataset_id = 'some dataset id'
+        project_id = config['PROJECT_ID']
+        dataset_id = config['DATASET_ID']
         
         # Create a new table with a counter if the row limit exceeds 1000
         table_counter = 1
