@@ -82,9 +82,9 @@ def get_report_with_retries(analytics, report_request):
         except HttpError as e:
             if e.resp.status == 503:  # Check for 503 Service Unavailable status
                 retries += 1
-                wait_minutes = random.randint(1, 5)  # Random sleep time between 1 and 5 minutes
-                print(f"503 Service Unavailable. Retrying in {wait_minutes} minutes... (Attempt {retries})")
-                time.sleep(wait_minutes * 60)  # Wait for the specified number of minutes
+                wait_seconds = random.randint(90, 420)  # Random sleep time between 90 and 420 seconds
+                print(f"503 Service Unavailable. Retrying in {wait_seconds} seconds... (Attempt {retries})")
+                time.sleep(wait_seconds)  # Wait for the specified number of seconds
             else:
                 raise  # Re-raise the exception if it's not a 503 error
 
