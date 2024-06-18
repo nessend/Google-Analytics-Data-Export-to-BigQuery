@@ -8,9 +8,15 @@ import time
 import random
 from googleapiclient.errors import HttpError
 import json
+import argparse
 
-# Load configuration from config.JSON file
-with open('config.json', 'r') as config_file:
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Set up Google Analytics config file.')
+parser.add_argument('--config', required=True, help='Path to the configuration JSON file.')
+args = parser.parse_args()
+
+# Load configuration from the JSON file
+with open(args.config, 'r') as config_file:
     config = json.load(config_file)
 
 # Set up your service account key file path
@@ -55,6 +61,7 @@ def get_report(analytics, report_request):
     while True:
         # Add the page token to the report request
         report_request['pageToken'] = page_token
+        report_request['pageSize'] = "100000"
 
         # Execute the report request
         response = analytics.reports().batchGet(
@@ -67,6 +74,7 @@ def get_report(analytics, report_request):
         # Check if there are more pages available
         next_page_token = response['reports'][0].get('nextPageToken')
         if next_page_token:
+            print(f"next page token:{next_page_token}")
             page_token = next_page_token
         else:
             break
