@@ -37,32 +37,38 @@ pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-
 4. In the IAM section, give your service account the roles of "BigQuery Data Editor" and "BigQuery Job User" (for BigQuery access), and "Viewer" role (for Google Analytics access).
 5. In your Google Analytics account, add the service account email as a user with Read & Analyze permissions at the view level.
 
-### Set Up Your Python Script
+### Set Up Your Config JSON Files
+Each config.json file should be in the following format (with your values):
 
-1. Download the Python script.
-2. Replace the placeholder values in the script with your actual values:
-3. Replace 'temp.json' with the path to your service account key file.
-4. Replace 'VIEW ID HERE' with your Google Analytics view ID.
-5. Replace 'INSERT PROJECT ID' with your Google Cloud project ID.
-6. Replace 'INSERT DATASET ID' with your BigQuery dataset ID.
-7. Edit the report_requests list to include the Google Analytics reports you want to export, specifying the metrics and dimensions for each report.
+```
+{
+    "SERVICE_KEY_PATH": "Your Service Key.json",
+    "VIEW_ID": "Your Google Analytics View Id",
+    "PROJECT_ID": "Your GCP Project",
+    "DATASET_ID": "Your dataset id"
+}
+```
 
-## Running the Script
+
+### Customize your reports (optional)
+
+Edit the report_requests list to include the Google Analytics reports you want to export, specifying the metrics and dimensions for each report.
+
+## Running the Python Script
 
 To run the script, navigate to the directory containing the script in your terminal and run the command:
 
 ```shell
-python your_script_name.py
+python script.py --config "config.json"
 ```
 
+## Running the run_reports.sh
 
-Replace 'script.py' with the actual name of the Python script.
+If you have multiple google analytics properties or views to export to BigQuery, you can create multiple configX.json files and list them out in the bash script.
 
+Then you can run them all at once and go do something else:
 
-SEO so this can find the right people
-
-Moving Google Analytics to BigQuery.
-Move GA3 to BigQuery.
-Transfer GA3 to BigQuery.
-Migrate Google Analytics Data to BigQuery.
-Migrate Google Analytics Data into to BigQuery.
+```
+chmod +x run_reports.sh
+./run_reports.sh
+```
